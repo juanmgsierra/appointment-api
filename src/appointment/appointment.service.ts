@@ -1,50 +1,102 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Appointment } from './entities/appointment.entity';
 import { Repository } from 'typeorm';
+import { Message } from './enums/messages.enum';
+import { Response } from 'src/interfaces/response.interface';
+
 
 @Injectable()
 export class AppointmentService {
-
   constructor(@InjectRepository(Appointment) private readonly appointmentRepo : Repository<Appointment>){}
 
-  async create(createAppointmentDto: CreateAppointmentDto) {
-    const appointment = await this.appointmentRepo.save(
-      { ...createAppointmentDto, notificationSent: false, createdDate: new Date() })
-    return { success: true, data: appointment };
-  }
+  async create(createAppointmentDto: CreateAppointmentDto): Promise<Response | Error>{
+    try {
+      const appointment = await this.appointmentRepo.save(
+        { ...createAppointmentDto, notificationSent: false, createdDate: new Date() })
 
-  async findAllByOwner(uidOwner : string) {
-    const appointments = await this.appointmentRepo.find({
-      where: { uidOwner : uidOwner } 
-    });
-    return { success: true, data: appointments };
-  }
-
-  async findAll() {
-    const appointments = await this.appointmentRepo.find();
-    return { success: true, data: appointments };
-  }
-
-  async findOne(id: number) {
-    const appointment = await this.appointmentRepo.findOneBy({ id });
-    if (!appointment) {
-      return { success: false, data: null };
+      return { 
+        message: Message.CREATED, 
+        typeTransaction: Message.TYPE_TRANSACTION, 
+        dateTime: new Date().toISOString(), 
+        data: appointment 
+      } 
+    } catch (error) {
+      return new InternalServerErrorException(Message.ERROR, { cause: new Error(), description: error })
     }
-    
-    return { success: true, data: appointment };
   }
 
-  async update(id: number, updateAppointmentDto: UpdateAppointmentDto) {
-    const appointment = await this.appointmentRepo.findOneBy({ id });
-    if(!appointment){
-      return { success: false, data: null}
+  async findAllByOwner(uidOwner: string): Promise<Response | Error>{
+    try {
+      const appointments = await this.appointmentRepo.find({
+        where: { uidOwner: uidOwner } 
+      })
+      if(appointments.length == 0){
+        return new NotFoundException(Message.NOT_FOUND);
+      }
+      return {
+        message: Message.FIND_ALL,
+        typeTransaction: Message.TYPE_TRANSACTION, 
+        dateTime: new Date().toISOString(), 
+        data: appointments
+      }
+    } catch (error) {
+      return new InternalServerErrorException(Message.ERROR, { cause: new Error(), description: error })
     }
-    const updateAppointment = await this.appointmentRepo.save({ ...appointment, ...updateAppointmentDto })
-    return { success: true, data: updateAppointment };
-    
   }
 
+  async findAll(): Promise<Response | Error> {
+    try {
+      const appointments = await this.appointmentRepo.find();
+      if(appointments.length == 0){
+        return new NotFoundException(Message.NOT_FOUND);
+      }
+      return { 
+        message: Message.FIND_ALL,
+        typeTransaction: Message.TYPE_TRANSACTION, 
+        dateTime: new Date().toISOString(), 
+        data: appointments
+      }
+    } catch (error) {
+      return new InternalServerErrorException(Message.ERROR, { cause: new Error(), description: error })
+    }
+  }
+
+  async findOne(id: number): Promise<Response | Error>{
+    try { 
+      const appointment = await this.appointmentRepo.findOneBy({ id });
+      if(!appointment){
+        return new NotFoundException(Message.NOT_FOUND);
+      }
+      return { 
+        message: Message.FIND_ONE, 
+        typeTransaction: Message.TYPE_TRANSACTION, 
+        dateTime: new Date().toISOString(), 
+        data: appointment 
+      }
+    } catch (error) {
+      return new InternalServerErrorException(Message.ERROR, { cause: new Error(), description: error })
+    }
+  }
+
+  async update(id: number, updateAppointmentDto: UpdateAppointmentDto): Promise<Response | Error> {
+    try {
+      const appointment = await this.appointmentRepo.findOneBy({ id })
+      if(!appointment){
+        return new NotFoundException(Message.NOT_FOUND);
+      }
+      const updateAppointment = await this.appointmentRepo.save({ ...appointment, ...updateAppointmentDto })
+      
+      return { 
+        message: Message.UPDATED, 
+        typeTransaction: Message.TYPE_TRANSACTION, 
+        dateTime: new Date().toISOString(), 
+        data: updateAppointment 
+      }
+    } catch (error) {
+      return new InternalServerErrorException(Message.ERROR, { cause: new Error(), description: error })
+    }
+  }
 }
