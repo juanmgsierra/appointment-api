@@ -33,8 +33,7 @@ export class AppointmentService {
     if (!appointment) {
       return { success: false, data: null };
     }
-    console.log(appointment)
-
+    
     return { success: true, data: appointment };
   }
 
