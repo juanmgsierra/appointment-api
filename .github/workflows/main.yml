@@ -34,7 +34,7 @@ jobs:
 
       - name: Build image
         run: docker build . --file Dockerfile --tag ${{ env.GAR_LOCATION }}
-        working-directory: appointment-api
+        working-directory: .
 
       - name: Push image
         run: docker push ${{ env.GAR_LOCATION }}
