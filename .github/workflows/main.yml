@@ -26,5 +26,5 @@ jobs:
     - name: build and push the docker image
       run: |
         gcloud auth configure-docker us-central1-docker.pkg.dev
-        docker build -t us-central1-docker.pkg.dev/${{ env.PROJECT }}/appointment-api/appointment:latest .
-        docker push us-central1-docker.pkg.dev/${{ env.PROJECT }}/appointment-api/appointment:latest
+        docker build -t us-central1-docker.pkg.dev/dental-dev-d8955/appointment-api/appointment:latest .
+        docker push us-central1-docker.pkg.dev/dental-dev-d8955/appointment-api/appointment:latest
