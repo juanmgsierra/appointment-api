@@ -24,9 +24,7 @@ jobs:
         project_id: ${{ env.PROJECT }}
 
     - name: build and push the docker image
-      env:
-        GOOGLE_PROJECT: ${{ env.PROJECT  }}
       run: |
         gcloud auth configure-docker us-central1-docker.pkg.dev
-        docker build -t us-central1-docker.pkg.dev/$GOOGLE_PROJECT/appointment-api/appointment:latest .
-        docker push us-central1-docker.pkg.dev/$GOOGLE_PROJECT/appointment-api/appointment:latest
+        docker build -t us-central1-docker.pkg.dev/${{ env.PROJECT }}/appointment-api/appointment:latest .
+        docker push us-central1-docker.pkg.dev/${{ env.PROJECT }}/appointment-api/appointment:latest
